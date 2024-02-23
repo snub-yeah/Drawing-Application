@@ -23,13 +23,14 @@
                   <HBox prefHeight="100.0" prefWidth="200.0">
                      <children>
                         <Button mnemonicParsing="false" onAction="#setFillTool" text="Fill Tool" />
+                        <Button mnemonicParsing="false" onAction="#onUndo" text="Undo" />
                      </children>
                   </HBox>
                </children>
             </VBox>
             <StackPane fx:id="stackPane" onMouseClicked="#onClick" prefHeight="150.0" prefWidth="200.0" style=" -fx-border-color:black; -fx-border-width: 3; -fx-border-style: solid;">
                <children>
-                  <ImageView fx:id="imgCanvas" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                  <ImageView fx:id="imgCanvas" fitHeight="150.0" fitWidth="200.0" onMouseDragExited="#onDragEnd" pickOnBounds="true" preserveRatio="true" />
                </children>
             </StackPane>
          </children>

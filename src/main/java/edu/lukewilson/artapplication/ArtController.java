@@ -5,6 +5,7 @@ import javafx.scene.control.Label;
 
 import javafx.scene.image.*;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
@@ -26,6 +27,7 @@ public class ArtController {
     private WritableImage writableImage;
     Draw draw = new Draw();
     Fill fill = new Fill();
+    Undo undo = new Undo();
     ImageUtils imageUtils = new ImageUtils();
     private double lastX = -1;
     private double lastY = -1;
@@ -47,6 +49,7 @@ public class ArtController {
         //change it to a writeable image so that we can write new pixels to it
         writableImage = new WritableImage((int) imgCanvas.getImage().getWidth(), (int) imgCanvas.getImage().getHeight());
         imgCanvas.setImage(writableImage);
+        undo.addToUndo(writableImage);
 
 
 
@@ -83,13 +86,14 @@ public class ArtController {
         } else {
             fill.fill(writableImage, imageX, imageY, imgCanvas, color);
         }
+        undo.addToUndo(writableImage);
 
     }
 
 
 
     public void onEraser(ActionEvent actionEvent) {
-        color = Color.WHITE;
+        color = Color.TRANSPARENT;
         brushSize = 15;
         isFillBucket = false;
     }
@@ -102,5 +106,35 @@ public class ArtController {
 
     public void setFillTool(ActionEvent actionEvent) {
         isFillBucket = true;
+    }
+
+    public void onDragEnd(MouseDragEvent mouseDragEvent) {
+        undo.addToUndo(writableImage);
+
+    }
+
+    public void onUndo(ActionEvent actionEvent) {
+        try {
+        if (undo.getSizeOfQueue() >=1) {
+            copyWriteableImageWithUndo(undo.getUndo());
+            imgCanvas.setImage(writableImage);
+            undo.removeLast();
+            if (undo.getSizeOfQueue() ==0) {
+                undo.addToUndo(writableImage);
+            }
+        } } catch (Exception e) {
+            undo.addToUndo(writableImage);
+        }
+    }
+
+    private void copyWriteableImageWithUndo(WritableImage _writableImage) {
+        PixelReader pixelReader = _writableImage.getPixelReader();
+        PixelWriter pixelWriter = writableImage.getPixelWriter();
+
+        for (int x = 0; x<_writableImage.getWidth(); x++) {
+            for (int y = 0; y<_writableImage.getHeight(); y++) {
+                pixelWriter.setColor(x, y, pixelReader.getColor(x, y));
+            }
+        }
     }
 }
