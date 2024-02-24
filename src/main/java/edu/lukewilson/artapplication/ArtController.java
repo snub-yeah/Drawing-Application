@@ -4,9 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
 import javafx.scene.image.*;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseDragEvent;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.StackPane;
 
 import javafx.scene.layout.VBox;
@@ -15,10 +13,12 @@ import javafx.scene.paint.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
+import java.util.concurrent.TimeUnit;
 
 public class ArtController {
 
     public ImageView imgCanvas;
+    public Label lblBrushSize;
     @FXML
             private StackPane stackPane;
     Image image = new Image("/white.jpg");
@@ -29,9 +29,10 @@ public class ArtController {
     Fill fill = new Fill();
     Undo undo = new Undo();
     ImageUtils imageUtils = new ImageUtils();
+    final KeyCombination ctrlZ = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
     private double lastX = -1;
     private double lastY = -1;
-    private int brushSize = 5;
+    private int brushSize = 2;
     boolean isFillBucket = false;
 
 
@@ -90,17 +91,45 @@ public class ArtController {
 
     }
 
+    /**
+     * Handles keyboard shortcuts for undo, brush, and eraser
+     * @param keyEvent - the keyboard shortcut pressed
+     */
+    public void handle(KeyEvent keyEvent) {
+        if (ctrlZ.match(keyEvent)) {
+            onUndo(new ActionEvent());
+        } else if (keyEvent.getCode() == KeyCode.B) {
+            onBrush(new ActionEvent());
+        } else if (keyEvent.getCode() == KeyCode.E) {
+            onEraser(new ActionEvent());
+        } else if (keyEvent.getCode() == KeyCode.G) {
+            setFillTool(new ActionEvent());
+        } else if (keyEvent.getCode() == KeyCode.F) {
+                try {
+                    decreaseBrush();
+                    TimeUnit.MILLISECONDS.sleep(100);
+                } catch (Exception e) {
+                    System.out.println("Interrupted");
+                }
 
+        } else if (keyEvent.getCode() == KeyCode.R) {
+            try {
+                increaseBrush();
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (Exception e) {
+                System.out.println("Interrupted");
+            }
+        }
+
+    }
 
     public void onEraser(ActionEvent actionEvent) {
         color = Color.TRANSPARENT;
-        brushSize = 15;
         isFillBucket = false;
     }
 
     public void onBrush(ActionEvent actionEvent) {
         color = Color.RED;
-        brushSize = 5;
         isFillBucket = false;
     }
 
@@ -135,6 +164,20 @@ public class ArtController {
             for (int y = 0; y<_writableImage.getHeight(); y++) {
                 pixelWriter.setColor(x, y, pixelReader.getColor(x, y));
             }
+        }
+    }
+
+    public void decreaseBrush() {
+        if (brushSize -1 > 1) {
+            brushSize--;
+            lblBrushSize.setText(String.valueOf(brushSize));
+        }
+    }
+
+    public void increaseBrush() {
+        if (brushSize +1 < 51) {
+            brushSize++;
+            lblBrushSize.setText(String.valueOf(brushSize));
         }
     }
 }
